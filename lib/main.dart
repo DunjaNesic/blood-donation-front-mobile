@@ -25,7 +25,7 @@ GoRouter router() {
     routes: [
       GoRoute(
         path: '/intro',
-        builder: (context, state) => const Home(),
+        builder: (context, state) => const Intro(),
       ),
       GoRoute(
         path: '/login',

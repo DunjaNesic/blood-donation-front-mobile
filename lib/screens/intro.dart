@@ -12,10 +12,10 @@ class Intro extends StatelessWidget {
         children: [
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/logo2.gif', // Update with your actual asset path
+                  'assets/images/logo2.gif',
                   height: 170,
                 ),
                 const SizedBox(height: 24),

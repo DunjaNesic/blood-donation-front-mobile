@@ -1,14 +1,48 @@
+import 'package:blood_donation/models/action.dart';
+import 'package:blood_donation/screens/action_details.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ActionCard extends StatelessWidget {
-  final String location;
-  final String name;
+  final TransfusionAction action;
 
   const ActionCard({
-    required this.location,
-    required this.name,
+    required this.action,
     super.key,
   });
+
+  Future<TransfusionAction?> _fetchAction() async {
+    final url = 'https://10.0.2.2:7062/itk/actions/${action.actionID}';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final actionData = jsonDecode(response.body);
+        final a = TransfusionAction.fromJson(actionData);
+        return a;
+      } else {
+        print('Failed to load action details');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+    return null;
+  }
+
+  void _navigateToDetails(BuildContext context) async {
+    final detailedAction = await _fetchAction();
+    if (detailedAction != null) {
+
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ActionDetailsScreen(action: detailedAction),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +65,7 @@ class ActionCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    location,
+                    action.exactLocation ?? "Lokacija je trenutno nedostupna",
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -53,16 +87,16 @@ class ActionCard extends StatelessWidget {
               height: 20.0,
             ),
             Text(
-              name,
+              action.actionName ?? "Naziv lokacije je trenutno nepoznat",
               style: const TextStyle(color: Color(0xFFB6C6FF), fontSize: 16),
               softWrap: true,
               overflow: TextOverflow.visible,
             ),
             Row(
               children: [
-                const Expanded(child: SizedBox()), // Spacer to push the button to the right
+                const Expanded(child: SizedBox()),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => _navigateToDetails(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6A85DE),
                     padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 2),

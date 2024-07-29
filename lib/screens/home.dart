@@ -316,8 +316,7 @@ class _HomeState extends State<Home> {
                 itemBuilder: (context, index) {
                   final action = _actions[index];
                   return ActionCard(
-                    location: action.exactLocation ?? "",
-                    name: action.actionName ?? "",
+                    action: action,
                   );
                 },
               )

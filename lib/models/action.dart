@@ -10,11 +10,13 @@ class TransfusionAction {
 
   factory TransfusionAction.fromJson(Map<String, dynamic> json) {
     return TransfusionAction(
-      actionID: json['ActionID'] ?? 0,
-      actionName: json['ActionName'],
-      actionDate: DateTime.parse(json['ActionDate']),
-      actionTimeFromTo: json['ActionTimeFromTo'],
-      exactLocation: json['ExactLocation']
+      actionID: json['actionID'] ?? 0,
+      actionName: json['actionName'],
+        actionDate: json['actionDate'] != null
+            ? DateTime.parse(json['actionDate'])
+            : DateTime.now(),
+      actionTimeFromTo: json['actionTimeFromTo'],
+      exactLocation: json['exactLocation']
     );
   }
 

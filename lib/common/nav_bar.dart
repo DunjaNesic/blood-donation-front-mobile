@@ -1,3 +1,4 @@
+import 'package:blood_donation/screens/coming_soon.dart';
 import 'package:flutter/material.dart';
 
 class CustomNavBar extends StatefulWidget {
@@ -9,6 +10,20 @@ class CustomNavBar extends StatefulWidget {
 
 class _CustomNavBarState extends State<CustomNavBar> {
   int _currentIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ComingSoonScreen(userType: "donor", id: "dunja")),
+      );
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +40,12 @@ class _CustomNavBarState extends State<CustomNavBar> {
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
-        backgroundColor: const Color(0xFFF1F5FC), // Set the background color here
+        backgroundColor: const Color(0xFFF1F5FC),
         selectedItemColor: const Color(0xFFD80032),
         unselectedItemColor: const Color(0xFF490008),
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          // Handle bottom navigation bar tap
-        },
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
