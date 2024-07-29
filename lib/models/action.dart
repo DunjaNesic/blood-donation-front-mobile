@@ -4,9 +4,10 @@ class TransfusionAction {
   final DateTime actionDate;
   final String? actionTimeFromTo;
   final String? exactLocation;
+  final String? placeName;
 
   TransfusionAction({required this.actionID, required this.actionName, required this.actionDate,
-  required this.actionTimeFromTo, required this.exactLocation});
+  required this.actionTimeFromTo, required this.exactLocation, required this.placeName});
 
   factory TransfusionAction.fromJson(Map<String, dynamic> json) {
     return TransfusionAction(
@@ -16,7 +17,8 @@ class TransfusionAction {
             ? DateTime.parse(json['actionDate'])
             : DateTime.now(),
       actionTimeFromTo: json['actionTimeFromTo'],
-      exactLocation: json['exactLocation']
+      exactLocation: json['exactLocation'],
+      placeName: json['placeName']
     );
   }
 
