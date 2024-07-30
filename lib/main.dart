@@ -2,7 +2,6 @@ import 'package:blood_donation/screens/intro.dart';
 import 'package:blood_donation/screens/login.dart';
 import 'package:blood_donation/screens/loading.dart';
 import 'package:blood_donation/screens/home.dart';
-import 'package:blood_donation/screens/coming_soon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
@@ -26,7 +25,7 @@ GoRouter router() {
     routes: [
       GoRoute(
         path: '/intro',
-        builder: (context, state) => const ComingSoonScreen(userType: "donor", id: "dunja"),
+        builder: (context, state) => const Intro(),
       ),
       GoRoute(
         path: '/login',

@@ -1,4 +1,5 @@
 import 'package:blood_donation/screens/coming_soon.dart';
+import 'package:blood_donation/screens/home.dart';
 import 'package:flutter/material.dart';
 
 class CustomNavBar extends StatefulWidget {
@@ -9,19 +10,41 @@ class CustomNavBar extends StatefulWidget {
 }
 
 class _CustomNavBarState extends State<CustomNavBar> {
-  int _currentIndex = 0;
+  final int _currentIndex = 0;
 
   void _onItemTapped(int index) {
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ComingSoonScreen(userType: "donor", id: "dunja")),
-      );
-    } else {
-      setState(() {
-        _currentIndex = index;
-      });
+    switch(index){
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ComingSoonScreen(userType: "donor", id: "dunja")),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+        break;
     }
+    // }
+    // else {
+    //   setState(() {
+    //     _currentIndex = index;
+    //   });
+    // }
   }
 
 

@@ -1,3 +1,4 @@
+import 'package:blood_donation/screens/notifications.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -35,7 +36,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const Notifications()));
+          },
         ),
       ],
       backgroundColor: const Color(0xFFF1F5FC),

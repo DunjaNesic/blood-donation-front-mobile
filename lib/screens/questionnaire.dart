@@ -40,7 +40,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         }
       });
     } else {
-      throw Exception('Failed to load questions');
+      throw Exception('Pitanja trenutno ne mogu da se ucitaju');
     }
   }
 
@@ -86,30 +86,34 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             int index = entry.key;
             Question question = entry.value;
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
               child: Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          '${index + 1}. ${question.questionText ?? 'No question text'}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                      Text(
+                        '${index + 1}. ${question.questionText ?? 'Error pri ucitavanju pitanja'}',
+                        style: const TextStyle(fontSize: 16),
                       ),
-                      const SizedBox(width: 12,),
-                      CustomSwitch(
-                        value: _answers[question.questionID] ?? false,
-                        onChanged: (bool value) {
-                          setState(() {
-                            _answers[question.questionID] = value;
-                          });
-                        },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Text('Ne'),
+                          CustomSwitch(
+                            value: _answers[question.questionID] ?? false,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _answers[question.questionID] = value;
+                              });
+                            },
+                          ),
+                          const Text('Da'),
+                        ],
                       ),
                     ],
                   ),
@@ -118,7 +122,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             );
           }),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
             child: ElevatedButton(
               onPressed: _submitQuestionnaire,
               style: ElevatedButton.styleFrom(
@@ -149,22 +153,13 @@ class CustomSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        decoration: BoxDecoration(
-          color: value ? Colors.red : Colors.grey,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          value ? 'Da' : 'Ne',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+    return Switch(
+      value: value,
+      onChanged: onChanged,
+      activeColor: Colors.red,
+      inactiveThumbColor: Colors.grey,
+      inactiveTrackColor: Colors.grey.withOpacity(0.4),
+      activeTrackColor: Colors.red.withOpacity(0.4),
     );
   }
 }
