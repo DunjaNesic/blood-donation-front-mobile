@@ -96,23 +96,6 @@ class _LoginState extends State<Login> {
     // final url = 'http://10.0.2.2:5219/itk/actions';
     // final url = 'https://10.0.2.2:7062/itk/actions';
 
-    // final headers = {
-    //   'Accept': 'application/json',
-    //   'Content-Type': 'application/json',
-    // };
-    //
-    // final response = await http.get(
-    //   Uri.parse(url),
-    //   headers: headers,
-    // );
-    //
-    // if (response.statusCode == 200) {
-    //   print('Success: ${response.body}');
-    // } else {
-    //   print('Request failed with status: ${response.statusCode}');
-    //   print('Response Body: ${response.body}');
-    // }
-
     if (_emailError == null && _passwordError == null) {
       final url = Uri.parse('https://10.0.2.2:7062/login');
 

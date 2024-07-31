@@ -305,7 +305,7 @@ class _HomeState extends State<Home> {
               onChanged: (value) {
                 setState(() {
                   _selectedCity = value == 'All Cities' ? null : value;
-                  // _fetchActions();
+                  // _fetchActions(); uraditi ovo posle
                 });
               },
             ),
