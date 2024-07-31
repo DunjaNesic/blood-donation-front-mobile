@@ -23,7 +23,7 @@ class _NotificationsState extends State<Notifications> {
   }
 
   Future<List<TransfusionAction>> fetchActions() async {
-    final response = await http.get(Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/calls'));
+    final response = await http.get(Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/calls/false'));
 
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);

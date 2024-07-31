@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:blood_donation/common/app_bar.dart';
 import 'package:blood_donation/common/nav_bar.dart';
-import 'package:blood_donation/screens/questionnaire.dart';
+import 'package:blood_donation/screens/creating_questionnaire.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class ComingSoonScreen extends StatefulWidget {

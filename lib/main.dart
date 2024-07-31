@@ -2,6 +2,8 @@ import 'package:blood_donation/screens/intro.dart';
 import 'package:blood_donation/screens/login.dart';
 import 'package:blood_donation/screens/loading.dart';
 import 'package:blood_donation/screens/home.dart';
+import 'package:blood_donation/screens/registration.dart';
+import 'package:blood_donation/screens/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
@@ -25,7 +27,7 @@ GoRouter router() {
     routes: [
       GoRoute(
         path: '/intro',
-        builder: (context, state) => const Intro(),
+        builder: (context, state) => const StatisticsScreen(),
       ),
       GoRoute(
         path: '/login',
@@ -33,7 +35,7 @@ GoRouter router() {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const Loading(),
+        builder: (context, state) => const RegistrationScreen(),
       ),
       GoRoute(
         path: '/home',

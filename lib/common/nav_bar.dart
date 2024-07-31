@@ -1,4 +1,5 @@
 import 'package:blood_donation/screens/coming_soon.dart';
+import 'package:blood_donation/screens/history.dart';
 import 'package:blood_donation/screens/home.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +30,7 @@ class _CustomNavBarState extends State<CustomNavBar> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const Home()),
+          MaterialPageRoute(builder: (context) => const UserHistoryScreen()),
         );
         break;
       case 3:

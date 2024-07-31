@@ -46,13 +46,14 @@ class _HomeState extends State<Home> {
 
     final minDate = _dateFromController.text.isNotEmpty ? _dateFromController.text : null;
     final maxDate = _dateToController.text.isNotEmpty ? _dateToController.text : null;
+    //na beku treba da odradim filtriranje za grad
     final city = _selectedCity != null && _selectedCity != 'Svi gradovi' ? _selectedCity : null;
     final searchQuery = _searchController.text.isNotEmpty ? _searchController.text : null;
 
     final queryParams = {
       if (minDate != null) 'MinDate': minDate,
       if (maxDate != null) 'MaxDate': maxDate,
-      // if (city != null) 'Search': city,
+      if (city != null) 'Search': city,
       if (searchQuery != null) 'Search': searchQuery,
     };
 
