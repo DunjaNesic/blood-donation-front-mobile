@@ -1,5 +1,9 @@
+import 'package:blood_donation/common/user_cubit.dart';
+import 'package:blood_donation/screens/intro.dart';
 import 'package:blood_donation/screens/notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -37,9 +41,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.notifications),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const Notifications()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const Notifications()));
           },
         ),
+        IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              SharedPreferences _prefs = await SharedPreferences.getInstance();
+              _prefs.remove('id');
+              _prefs.remove('token');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Intro()));
+            })
       ],
       backgroundColor: const Color(0xFFF1F5FC),
       shadowColor: Colors.blueGrey,

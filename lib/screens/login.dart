@@ -1,9 +1,14 @@
+import 'package:blood_donation/common/auth_api.dart';
+import 'package:blood_donation/main.dart';
+import 'package:blood_donation/models/user.dart';
+import 'package:blood_donation/screens/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:blood_donation/common/errors.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,6 +20,8 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
 
+  AuthAPI _authAPI = AuthAPI();
+
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   late final FocusNode _emailFocusNode;
@@ -25,7 +32,7 @@ class _LoginState extends State<Login> {
   String? _emailError;
   String? _passwordError;
 
-  final _storage = FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -43,6 +50,12 @@ class _LoginState extends State<Login> {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
+  }
+
+  void updateSharedPreferences(String token, int id) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.setString('token', token);
+    _prefs.setInt('id', id);
   }
 
   void _togglePasswordVisibility() {
@@ -90,56 +103,77 @@ class _LoginState extends State<Login> {
     });
   }
 
-  Future<void> _login() async {
+  Future<void> _login() async{
     _validateFields();
+    if (_emailError == null && _passwordError == null){
 
-    // final url = 'http://10.0.2.2:5219/itk/actions';
-    // final url = 'https://10.0.2.2:7062/itk/actions';
+      var req = await _authAPI.login(_emailController.text,  _passwordController.text);
+      if(req.statusCode == 200){
+        print(req.body);
+        var user = User.fromReqBody(req.body);
+        user.printAttributes();
 
-    if (_emailError == null && _passwordError == null) {
-      final url = Uri.parse('https://10.0.2.2:7062/login');
+        BlocProvider.of<UserCubit>(context).login(user);
+        updateSharedPreferences(user.accessToken, user.userID);
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) => Home(),
+        ));
 
-      final headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      final body = jsonEncode({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      });
-
-      try {
-        final response = await http.post(url, headers: headers, body: body);
-
-        if (response.statusCode == 200) {
-          final responseBody = jsonDecode(response.body);
-
-          final accessToken = responseBody['accessToken'];
-          final refreshToken = responseBody['refreshToken'];
-
-          await _storage.write(key: 'accessToken', value: accessToken);
-          await _storage.write(key: 'refreshToken', value: refreshToken);
-
-          if (mounted) context.pushReplacement('/home');
-        } else if(response.statusCode == 401) {
-          setState(() {
-            _passwordError = 'Pogrešni kredencijali';
-          });
-        }
-        else {
-          final responseBody = jsonDecode(response.body);
-          setState(() {
-            _emailError = responseBody['email'];
-            _passwordError = responseBody['password'];
-          });
-          print(responseBody);
-        }
-      } catch (error) {
-        print('Error logging in: $error');
-      }
     }
+
+
   }
+
+  // Future<void> _login() async {
+  //   _validateFields();
+  //
+  //   // final url = 'http://10.0.2.2:5219/itk/actions';
+  //   // final url = 'https://10.0.2.2:7062/itk/actions';
+  //
+  //   if (_emailError == null && _passwordError == null) {
+  //     final url = Uri.parse('https://10.0.2.2:7062/login');
+  //
+  //     final headers = {
+  //       'Accept': 'application/json',
+  //       'Content-Type': 'application/json',
+  //     };
+  //
+  //     final body = jsonEncode({
+  //       'email': _emailController.text,
+  //       'password': _passwordController.text,
+  //     });
+  //
+  //     try {
+  //       final response = await http.post(url, headers: headers, body: body);
+  //
+  //       if (response.statusCode == 200) {
+  //         final responseBody = jsonDecode(response.body);
+  //
+  //         final accessToken = responseBody['accessToken'];
+  //         final refreshToken = responseBody['refreshToken'];
+  //
+  //         await _storage.write(key: 'accessToken', value: accessToken);
+  //         await _storage.write(key: 'refreshToken', value: refreshToken);
+  //
+  //         if (mounted) context.pushReplacement('/home');
+  //       } else if(response.statusCode == 401) {
+  //         setState(() {
+  //           _passwordError = 'Pogrešni kredencijali';
+  //         });
+  //       }
+  //       else {
+  //         final responseBody = jsonDecode(response.body);
+  //         setState(() {
+  //           _emailError = responseBody['email'];
+  //           _passwordError = responseBody['password'];
+  //         });
+  //         print(responseBody);
+  //       }
+  //     } catch (error) {
+  //       print('Error logging in: $error');
+  //     }
+  //   }
+   }
 
   @override
   Widget build(BuildContext context) {
