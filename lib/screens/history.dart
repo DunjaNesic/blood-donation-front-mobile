@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserHistoryScreen extends StatefulWidget {
   const UserHistoryScreen({super.key});
@@ -16,6 +16,9 @@ class UserHistoryScreen extends StatefulWidget {
 
 class _UserHistoryScreenState extends State<UserHistoryScreen> {
   List<TransfusionAction> actions = [];
+  String userType = "";
+  String? JMBG = "";
+  int? volunteerID;
 
   @override
   void initState() {
@@ -24,8 +27,37 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
   }
 
   Future<void> fetchActions() async {
-    final response = await http.get(
-        Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/calls/true'));
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
+
+    if (userID == null) {
+      print('AAAA');
+    }
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      throw Exception('Failed to fetch user information');
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    setState(() {
+      userType = authData['userType'];
+      JMBG = authData['jmbg'] ?? '';
+      volunteerID = authData['volunteerID'];
+    });
+
+    String url;
+
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/calls/true';
+    } else if (userType == 'Donor' && JMBG != null) {
+      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/calls/true';
+    } else {
+      throw Exception('Invalid user type or missing identifiers');
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -59,15 +91,14 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             ),
           ),
           Expanded(
-            child: buildActionList(actions),
+            child: buildActionList(actions, userType, JMBG),
           ),
         ],
       ),
-      bottomNavigationBar: const CustomNavBar(),
     );
   }
 
-  Widget buildActionList(List<TransfusionAction> actions) {
+  Widget buildActionList(List<TransfusionAction> actions, String userType, String? JMBG) {
     return ListView.separated(
       itemCount: actions.length,
       separatorBuilder: (context, index) => Align(
@@ -112,18 +143,20 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: IconButton(
+          trailing: userType == 'Donor'
+              ? IconButton(
             icon: const Icon(Icons.insert_drive_file, color: Color(0xFF413F89)),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      QuestionnaireForAction(actionID: action.actionID),
+                      QuestionnaireForAction(actionID: action.actionID, jmbg: JMBG),
                 ),
               );
             },
-          ),
+          )
+              : null,
         );
       },
     );

@@ -1,6 +1,5 @@
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
-import 'package:blood_donation/models/question.dart';  // Make sure to import your Question class
+import 'package:blood_donation/models/question.dart';
 import 'package:blood_donation/models/questionnaire.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,8 +7,9 @@ import 'dart:convert';
 
 class QuestionnaireForAction extends StatefulWidget {
   final int actionID;
+  final String? jmbg;
 
-  const QuestionnaireForAction({super.key, required this.actionID});
+  const QuestionnaireForAction({super.key, required this.actionID, required this.jmbg});
 
   @override
   State<QuestionnaireForAction> createState() => _QuestionnaireForActionState();
@@ -28,7 +28,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
 
   Future<Map<int, String>> fetchQuestions() async {
     final response = await http.get(
-      Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/questionnaires/questions'),
+      Uri.parse('https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/questions'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -46,7 +46,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
 
   Future<Questionnaire> fetchQuestionnaire() async {
     final response = await http.get(Uri.parse(
-        'https://10.0.2.2:7062/itk/donors/1104001765020/questionnaires/${widget.actionID}'));
+        'https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/${widget.actionID}'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -87,7 +87,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          questionnaire.questionnaireTitle ?? "",
+                          questionnaire.questionnaireTitle ?? "Naziv upitnika trenutno nije dostupan",
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: const Color(0xFF490008),
                             fontWeight: FontWeight.bold,
@@ -105,7 +105,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
                             itemCount: questionnaire.answeredQuestions.length,
                             itemBuilder: (context, index) {
                               final question = questionnaire.answeredQuestions[index];
-                              final questionText = questions[question.questionID] ?? 'Unknown question';
+                              final questionText = questions[question.questionID] ?? 'Pitanje trenutno nije dostupno';
                               final Color cardColor = question.answer
                                   ? Colors.red.withOpacity(0.4)
                                   : Colors.lightGreenAccent.withOpacity(0.4);
@@ -146,7 +146,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
           }
         },
       ),
-      bottomNavigationBar: const CustomNavBar(),
+      // bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

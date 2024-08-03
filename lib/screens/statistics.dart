@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:blood_donation/models/donor_stats.dart';
+import 'package:blood_donation/models/stats.dart';
+import 'package:blood_donation/models/volunteer_stats.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -15,22 +16,66 @@ class StatisticsScreen extends StatefulWidget {
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
-  late Future<DonorStatistics> _donorStatistics;
+  late Future<Statistics> _statistics;
+  String userType = "";
+  String JMBG = "";
+  int? volunteerID;
+  String fullName = ""; // Add this variable to store the fullName
 
   @override
   void initState() {
     super.initState();
-    _donorStatistics = fetchDonorStatistics();
+    _statistics = _fetchStatistics();
   }
 
-  Future<DonorStatistics> fetchDonorStatistics() async {
-    final response = await http.get(
-        Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/stats'));
+  Future<Statistics> _fetchStatistics() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
+
+    if (userID == null) {
+      throw Exception('User ID is missing');
+    }
+
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      throw Exception('Failed to fetch user information');
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    setState(() {
+      userType = authData['userType'];
+      JMBG = authData['jmbg'] ?? '';
+      volunteerID = authData['volunteerID'];
+    });
+
+    String url;
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/stats';
+    } else if (userType == 'Donor' && JMBG.isNotEmpty) {
+      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/stats';
+    } else {
+      throw Exception('Invalid user type or missing ID');
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
-      return DonorStatistics.fromJson(jsonDecode(response.body));
+      final stats = jsonDecode(response.body);
+      setState(() {
+        fullName = stats['fullName'] ?? ''; // Extract fullName from response
+      });
+
+      if (userType == 'Donor') {
+        return DonorStatistics.fromJson(stats);
+      } else if (userType == 'Volunteer') {
+        return VolunteerStatistics.fromJson(stats);
+      } else {
+        throw Exception('Unknown user type');
+      }
     } else {
-      throw Exception('Greska pri ucitavanju statistika');
+      throw Exception('Failed to load statistics');
     }
   }
 
@@ -39,7 +84,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5FC),
       appBar: const CustomAppBar(title: 'ITK FON'),
-      bottomNavigationBar: const CustomNavBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -58,7 +102,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         topRight: Radius.circular(16.0),
                       ),
                       child: Image.asset(
-                        'assets/images/sa cvikerima.jpeg',
+                        'assets/images/stats.jpg',
                         height: 240,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -72,9 +116,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Dunja Nešić',
-                                  style: TextStyle(
+                                Text(
+                                  fullName.isEmpty ? 'User Name' : fullName, // Use fullName variable
+                                  style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -110,40 +154,41 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              FutureBuilder<DonorStatistics>(
-                future: _donorStatistics,
+              FutureBuilder<Statistics>(
+                future: _statistics,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Text('${snapshot.error}');
                   } else if (snapshot.hasData) {
+                    final stats = snapshot.data!;
                     return Column(
                       children: [
                         _buildStatisticIndicator(
                           context,
-                          percentage: snapshot.data!.acceptedAndAttendedPercentage / 100,
+                          percentage: stats.acceptedAndAttendedPercentage / 100,
                           label: 'Prihvatili ste poziv i pojavili ste se, bravo!!',
                           color: const Color(0xFF8593ED),
                         ),
                         const SizedBox(height: 24),
                         _buildStatisticIndicator(
                           context,
-                          percentage: snapshot.data!.acceptedButDidNotAttendPercentage / 100,
+                          percentage: stats.acceptedButDidNotAttendPercentage / 100,
                           label: 'Prihvatili ste poziv ali se niste pojavili :(',
                           color: const Color(0xFFE42C64),
                         ),
                         const SizedBox(height: 24),
                         _buildStatisticIndicator(
                           context,
-                          percentage: snapshot.data!.declinedAndDidNotAttendPercentage / 100,
+                          percentage: stats.declinedAndDidNotAttendPercentage / 100,
                           label: 'Odbili ste poziv i niste se pojavili',
                           color: Colors.purple,
                         ),
                         const SizedBox(height: 24),
                         _buildStatisticIndicator(
                           context,
-                          percentage: snapshot.data!.declinedButAttendedPercentage / 100,
+                          percentage: stats.declinedButAttendedPercentage / 100,
                           label: 'Odbili ste poziv ali ste se ipak pojavili',
                           color: const Color(0xFF5A6ACF),
                         ),

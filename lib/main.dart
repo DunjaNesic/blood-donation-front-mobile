@@ -1,8 +1,14 @@
-import 'package:blood_donation/models/user.dart';
+import 'package:blood_donation/common/custom_scaffold.dart';
+import 'package:blood_donation/common/user_cubit.dart';
+import 'package:blood_donation/models/action.dart';
+import 'package:blood_donation/screens/action_details.dart';
+import 'package:blood_donation/screens/coming_soon.dart';
+import 'package:blood_donation/screens/history.dart';
 import 'package:blood_donation/screens/intro.dart';
 import 'package:blood_donation/screens/login.dart';
 import 'package:blood_donation/screens/home.dart';
 import 'package:blood_donation/screens/registration.dart';
+import 'package:blood_donation/screens/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,14 +21,6 @@ class MyHttpOverrides extends HttpOverrides {
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
-}
-
-class UserCubit extends Cubit<User?> {
-  UserCubit(super.state);
-
-  void login(User user) => emit(user);
-
-  void logout() => emit(null);
 }
 
 void main() async {
@@ -52,7 +50,26 @@ GoRouter router(String initialRoute) {
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const Home(),
+        builder: (context, state) => const CustomScaffold(body: Home(), currentIndex: 0),
+      ),
+      GoRoute(
+        path: '/coming_soon',
+        builder: (context, state) => const CustomScaffold(body: ComingSoonScreen(), currentIndex: 1),
+      ),
+      GoRoute(
+        path: '/history',
+        builder: (context, state) => const CustomScaffold(body: UserHistoryScreen(), currentIndex: 2),
+      ),
+      GoRoute(
+        path: '/statistics',
+        builder: (context, state) => const CustomScaffold(body: StatisticsScreen(), currentIndex: 3),
+      ),
+      GoRoute(
+        path: '/action_details',
+        builder: (context, state) {
+          final action = state.extra as TransfusionAction;
+          return ActionDetailsScreen(action: action);
+        },
       ),
     ],
   );
@@ -65,12 +82,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<UserCubit>(
-          create: (BuildContext context) => UserCubit(null),
-        ),
-      ],
+    return BlocProvider<UserCubit>(
+      lazy: false,
+      create: (context) => UserCubit(null),
       child: MaterialApp.router(
         title: 'Blood Donation',
         theme: ThemeData(fontFamily: 'Lexend'),

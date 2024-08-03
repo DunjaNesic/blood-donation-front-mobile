@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ActionDetailsScreen extends StatelessWidget {
   final TransfusionAction action;
@@ -11,22 +13,62 @@ class ActionDetailsScreen extends StatelessWidget {
   const ActionDetailsScreen({required this.action, super.key});
 
   Future<void> _actionSignUp(BuildContext context) async {
-    const jmbg = '1104001765020';
-    final actionId = action.actionID;
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
 
-    final url = 'https://10.0.2.2:7062/itk/donors/$jmbg/$actionId';
+    if (userID == null) {
+      await _showDialog(context, 'User ID not found', false);
+      return;
+    }
+
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      await _showDialog(context, 'Failed to fetch user information', false);
+      return;
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    final userType = authData['userType'];
+    final jmbg = authData['jmbg'];
+    final volunteerID = authData['volunteerID'];
+    final actionId = action.actionID;
+    String url;
+
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionId';
+    } else if (userType == 'Donor' && jmbg != null) {
+      url = 'https://10.87.0.161:7062/itk/donors/$jmbg/$actionId';
+    } else {
+      await _showDialog(context, 'Invalid user type or missing identifiers', false);
+      return;
+    }
+
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'key': 'value'}),
     );
-
-    final success = response.statusCode == 200;
-
-    await _showDialog(context, success ? 'Uspesno ste se prijavili na akciju!' : 'Ne mozete se prijaviti za ovu akciju :(', success);
-
+    final res = response.statusCode;
+    if (res == 451){
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "acceptedTheCall": "true",
+          "showedUp": "false",
+        }),
+      );
+      final success = response.statusCode == 200;
+      await _showDialog(context, success ? 'Uspesno ste se ponovo prijavili za akciju' : 'Ne mozete vise da se prijavite za akciju, vec ste jednom bili prijavljeni', success);
+    } else {
+      await _showDialog(context, res == 200
+          ? 'Uspesno ste se prijavili na akciju!'
+          : 'Ne mozete se prijaviti za ovu akciju :(', res == 200);
+    }
     if (context.mounted) {
-      Navigator.pop(context);
+      context.pop();
     }
   }
 
@@ -43,7 +85,7 @@ class ActionDetailsScreen extends StatelessWidget {
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('OK'),
             ),
           ],
@@ -131,7 +173,6 @@ class ActionDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

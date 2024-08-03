@@ -1,5 +1,5 @@
 class BaseAPI{
-  static String base = "https://10.0.2.2:7062";
+  static String base = "https://10.87.0.161:7062";
   static var api = base + "/itk";
   var nekiPath = api + "/nesto";
   var authPath = base + "/login";

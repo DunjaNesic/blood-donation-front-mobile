@@ -1,7 +1,7 @@
 import 'package:blood_donation/common/auth_api.dart';
+import 'package:blood_donation/common/user_cubit.dart';
 import 'package:blood_donation/main.dart';
 import 'package:blood_donation/models/user.dart';
-import 'package:blood_donation/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -114,14 +114,12 @@ class _LoginState extends State<Login> {
         user.printAttributes();
 
         BlocProvider.of<UserCubit>(context).login(user);
+        //bloc provider mi nigde drugde ne radi
+        // final userCubit = BlocProvider.of<UserCubit>(context);
+        // final userr = userCubit.state;
         updateSharedPreferences(user.accessToken, user.userID);
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) => Home(),
-        ));
-
+        context.pushReplacement('/home');
     }
-
-
   }
 
   // Future<void> _login() async {

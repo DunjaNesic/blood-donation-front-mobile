@@ -3,52 +3,46 @@ import 'package:blood_donation/screens/history.dart';
 import 'package:blood_donation/screens/home.dart';
 import 'package:blood_donation/screens/statistics.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomNavBar extends StatefulWidget {
-  const CustomNavBar({super.key});
+  final int currentIndex;
+  const CustomNavBar({super.key, required this.currentIndex});
 
   @override
   State<CustomNavBar> createState() => _CustomNavBarState();
 }
 
 class _CustomNavBarState extends State<CustomNavBar> {
-  final int _currentIndex = 0;
+  int _currentIndex;
 
-  void _onItemTapped(int index) {
-    switch(index){
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ComingSoonScreen(userType: "donor", id: "dunja")),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const UserHistoryScreen()),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const StatisticsScreen()),
-        );
-        break;
-    }
-    // }
-    // else {
-    //   setState(() {
-    //     _currentIndex = index;
-    //   });
-    // }
+  _CustomNavBarState() : _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.currentIndex;
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    switch (index) {
+      case 0:
+        GoRouter.of(context).go('/home');
+        break;
+      case 1:
+        GoRouter.of(context).go('/coming_soon');
+        break;
+      case 2:
+        GoRouter.of(context).go('/history');
+        break;
+      case 3:
+        GoRouter.of(context).go('/statistics');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

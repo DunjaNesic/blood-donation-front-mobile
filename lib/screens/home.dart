@@ -1,8 +1,7 @@
+import 'package:blood_donation/common/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:blood_donation/models/place.dart';
 import 'package:blood_donation/models/action.dart';
-import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:blood_donation/common/action_card.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -57,7 +56,7 @@ class _HomeState extends State<Home> {
       if (searchQuery != null) 'Search': searchQuery,
     };
 
-    final uri = Uri.https('10.0.2.2:7062', '/itk/actions', queryParams);
+    final uri = Uri.https('10.87.0.161:7062', '/itk/actions', queryParams);
 
     final headers = {
       'Accept': 'application/json',
@@ -86,7 +85,7 @@ class _HomeState extends State<Home> {
 
   Future<void> _fetchCities() async {
     try {
-      final response = await http.get(Uri.parse('https://10.0.2.2:7062/itk/places'));
+      final response = await http.get(Uri.parse('https://10.87.0.161:7062/itk/places'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         final List<Place> places = data.map((json) => Place.fromJson(json)).toList();
@@ -326,7 +325,6 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

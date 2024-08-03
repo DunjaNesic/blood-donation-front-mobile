@@ -1,7 +1,8 @@
 import 'package:blood_donation/models/stats.dart';
 
-class DonorStatistics implements Statistics {
-  final String jmbg;
+class VolunteerStatistics implements Statistics{
+  final int volunteerID;
+  final String fullName;
   final int totalActions;
   @override
   final double acceptedAndAttendedPercentage;
@@ -12,8 +13,9 @@ class DonorStatistics implements Statistics {
   @override
   final double declinedButAttendedPercentage;
 
-  DonorStatistics({
-    required this.jmbg,
+  VolunteerStatistics({
+    required this.volunteerID,
+    required this.fullName,
     required this.totalActions,
     required this.acceptedAndAttendedPercentage,
     required this.acceptedButDidNotAttendPercentage,
@@ -21,9 +23,10 @@ class DonorStatistics implements Statistics {
     required this.declinedButAttendedPercentage,
   });
 
-  factory DonorStatistics.fromJson(Map<String, dynamic> json) {
-    return DonorStatistics(
-      jmbg: json['jmbg'],
+  factory VolunteerStatistics.fromJson(Map<String, dynamic> json) {
+    return VolunteerStatistics(
+      volunteerID: json['volunteerID'],
+      fullName: json['fullName'],
       totalActions: json['totalActions'],
       acceptedAndAttendedPercentage: json['acceptedAndAttendedPercentage'],
       acceptedButDidNotAttendPercentage: json['acceptedButDidNotAttendPercentage'],

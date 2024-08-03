@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:blood_donation/models/question.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:blood_donation/common/app_bar.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
-  const QuestionnaireScreen({super.key});
+  final int actionID;
+  final String jmbg;
+
+  const QuestionnaireScreen({
+    super.key,
+    required this.actionID,
+    required this.jmbg,
+  });
+
 
   @override
   State<QuestionnaireScreen> createState() => _QuestionnaireScreenState();
@@ -24,7 +31,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   Future<void> _fetchQuestions() async {
     final response = await http.get(
-      Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/questionnaires/questions'),
+      Uri.parse('https://10.0.2.2:7062/itk/donors/${widget.jmbg}/questionnaires/questions'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -46,7 +53,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   Future<void> _submitQuestionnaire() async {
     final response = await http.post(
-      Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/questionnaires/2'),
+      Uri.parse('https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/2'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -136,7 +143,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomNavBar(),
+      // bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

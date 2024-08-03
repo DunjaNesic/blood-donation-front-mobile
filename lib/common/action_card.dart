@@ -1,6 +1,6 @@
 import 'package:blood_donation/models/action.dart';
-import 'package:blood_donation/screens/action_details.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -13,7 +13,7 @@ class ActionCard extends StatelessWidget {
   });
 
   Future<TransfusionAction?> _fetchAction() async {
-    final url = 'https://10.0.2.2:7062/itk/actions/${action.actionID}';
+    final url = 'https://10.87.0.161:7062/itk/actions/${action.actionID}';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -32,14 +32,8 @@ class ActionCard extends StatelessWidget {
   void _navigateToDetails(BuildContext context) async {
     final detailedAction = await _fetchAction();
     if (detailedAction != null) {
-
       if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ActionDetailsScreen(action: detailedAction),
-          ),
-        );
+        context.push('/action_details', extra: detailedAction);
       }
     }
   }

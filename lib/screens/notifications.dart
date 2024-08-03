@@ -1,10 +1,10 @@
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({super.key});
@@ -15,28 +15,70 @@ class Notifications extends StatefulWidget {
 
 class _NotificationsState extends State<Notifications> {
   late Future<List<TransfusionAction>> futureActions;
+  String userType = "";
+  String JMBG = "";
+  int? volunteerID;
 
   @override
   void initState() {
     super.initState();
-    futureActions = fetchActions();
+    futureActions = _fetchActions();
   }
 
-  Future<List<TransfusionAction>> fetchActions() async {
-    final response = await http.get(Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/calls/false'));
+  Future<List<TransfusionAction>> _fetchActions() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
+
+    if (userID == null) {
+      throw Exception('User ID is missing');
+    }
+
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      throw Exception('Failed to fetch user information');
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    setState(() {
+      userType = authData['userType'];
+      JMBG = authData['jmbg'] ?? '';
+      volunteerID = authData['volunteerID'];
+    });
+
+    String url;
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/calls/false';
+    } else if (userType == 'Donor' && JMBG.isNotEmpty) {
+      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/calls/false';
+    } else {
+      return [];
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
+      final List<dynamic> data = json.decode(response.body);
       return data.map((json) => TransfusionAction.fromJson(json)).toList();
-    } else if (response.statusCode == 404) throw Exception('Trenutno nemate pozive na akcije');
-    else {
-      throw Exception('Doslo je do greske pri ucitavanju poziva na akciju');
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to load notifications');
     }
   }
 
-  Future<void> updateActionStatus(int actionID, bool accepted) async {
+  Future<void> _updateActionStatus(int actionID, bool accepted) async {
+    if (userType.isEmpty || (userType == 'Donor' && JMBG.isEmpty) || (userType == 'Volunteer' && volunteerID == null)) {
+      throw Exception('Invalid user type or identifier');
+    }
+
+    final url = userType == 'Donor'
+        ? 'https://10.87.0.161:7062/itk/donors/$JMBG/$actionID'
+        : 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionID';
+
     final response = await http.put(
-      Uri.parse('https://10.0.2.2:7062/itk/donors/1104001765020/$actionID'),
+      Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -47,9 +89,10 @@ class _NotificationsState extends State<Notifications> {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Greskaaaaaa');
+      throw Exception('Failed to update action status');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +101,6 @@ class _NotificationsState extends State<Notifications> {
         title: 'ITK FON',
         showBackButton: true,
       ),
-      bottomNavigationBar: const CustomNavBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<List<TransfusionAction>>(
@@ -69,7 +111,7 @@ class _NotificationsState extends State<Notifications> {
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No actions available'));
+              return const Center(child: Text('Nemate pozive na akcije'));
             }
 
             return ListView(
@@ -78,13 +120,13 @@ class _NotificationsState extends State<Notifications> {
                   action: action,
                   onAccept: () async {
                     try {
-                      await updateActionStatus(action.actionID, true);
+                      await _updateActionStatus(action.actionID, true);
                       setState(() {
-                        futureActions = fetchActions();
+                        futureActions = _fetchActions();
                       });
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Doslo je do greske pri ucitavanju poziva: $e')),
+                        SnackBar(content: Text('Error updating action: $e')),
                       );
                     }
                   },
@@ -125,10 +167,10 @@ class NotificationCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8.0),
-            Text('Lokacija: ${action.placeName ?? ''}'),
-            Text('Adresa: ${action.exactLocation ?? ''}'),
-            Text('Datum: ${DateFormat('dd.MM.yyyy').format(action.actionDate)}'),
-            Text('Vreme: ${action.actionTimeFromTo ?? ''}'),
+            Text('Location: ${action.placeName ?? ''}'),
+            Text('Address: ${action.exactLocation ?? ''}'),
+            Text('Date: ${DateFormat('dd.MM.yyyy').format(action.actionDate)}'),
+            Text('Time: ${action.actionTimeFromTo ?? ''}'),
             const SizedBox(height: 8.0),
             Row(
               children: [

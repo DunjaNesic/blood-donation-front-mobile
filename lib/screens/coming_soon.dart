@@ -1,17 +1,15 @@
 import 'dart:convert';
 import 'package:blood_donation/models/action.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:blood_donation/screens/creating_questionnaire.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ComingSoonScreen extends StatefulWidget {
-  final String userType;
-  final String id;
-
-  const ComingSoonScreen({super.key, required this.userType, required this.id});
+  const ComingSoonScreen({super.key});
 
   @override
   State<ComingSoonScreen> createState() => _ComingSoonScreenState();
@@ -19,18 +17,118 @@ class ComingSoonScreen extends StatefulWidget {
 
 class _ComingSoonScreenState extends State<ComingSoonScreen> {
   late Future<List<TransfusionAction>> futureActions;
+  String userType = "";
+  String? jmbg;
+
+  Future<void> cancelAction(int actionID) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
+
+    if (userID == null) {
+      print('AAAA');
+    }
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      throw Exception('Failed to fetch user information');
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    final volunteerID = authData['volunteerID'];
+    String url;
+
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionID';
+    } else if (userType == 'Donor' && jmbg != null) {
+      url = 'https://10.87.0.161:7062/itk/donors/$jmbg/$actionID';
+    } else {
+      throw Exception('Invalid user type or missing identifiers');
+    }
+
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "acceptedTheCall": "false",
+        "showedUp": "false",
+      }),
+    );
+
+    final success = response.statusCode == 200;
+      await _showDialog(context, success ? 'Uspesno ste otkazali svoj dolazak na akciju :(' : 'Trenutno ne mozete da otkazete svoj dolazak, pokusajte kasnije', success);
+  }
+
+  Future<void> _showDialog(BuildContext context, String message, bool success) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Icon(
+            success ? Icons.check_circle : Icons.cancel,
+            color: success ? Colors.green : Colors.red,
+            size: 48,
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('Ok'),
+              onPressed: () {
+                context.pop();
+                if (success) {
+                  setState(() {
+                    futureActions = fetchActions();
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<List<TransfusionAction>> fetchActions() async {
-    final response = await http.get(Uri.parse(
-        'https://10.0.2.2:7062/itk/actions/incoming/${0}/1104001765020'));
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final userID = _prefs.getInt('id');
+
+    if (userID == null) {
+      print('AAAA');
+    }
+    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
+
+    if (authResponse.statusCode != 200) {
+      throw Exception('Failed to fetch user information');
+    }
+
+    final authData = jsonDecode(authResponse.body);
+    setState(() {
+      userType = authData['userType'];
+      jmbg = authData['jmbg'];
+    });
+    final volunteerID = authData['volunteerID'];
+    String url;
+
+    if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
+      url = 'https://10.87.0.161:7062/itk/actions/incoming/${1}/${volunteerID}';
+    } else if (userType == 'Donor' && jmbg != null) {
+      url = 'https://10.87.0.161:7062/itk/actions/incoming/${0}/${jmbg}';
+    } else {
+      throw Exception('Invalid user type or missing identifiers');
+    }
+
+    final response = await http.get(Uri.parse(url), headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = json.decode(response.body);
-      return jsonResponse
-          .map((action) => TransfusionAction.fromJson(action))
-          .toList();
-    } else {
-      throw Exception('Failed to load actions');
+      return jsonResponse.map((action) => TransfusionAction.fromJson(action)).toList();
+    } else if (response.statusCode == 404){
+      //srediti output caching
+      throw Exception('Niste prijavljeni ni za jednu akciju');
+    }
+    else {
+      throw Exception('Trenutno ne mozemo da ucitamo vase akcije');
     }
   }
 
@@ -71,10 +169,8 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                 itemCount: actions.length,
                 itemBuilder: (context, index) {
                   TransfusionAction action = actions[index];
-                  Duration timeUntilAction =
-                  action.actionDate.difference(DateTime.now());
-                  String timeUntilActionFormatted =
-                  formatDuration(timeUntilAction);
+                  Duration timeUntilAction = action.actionDate.difference(DateTime.now());
+                  String timeUntilActionFormatted = formatDuration(timeUntilAction);
                   bool isQuestionnaireButtonEnabled = timeUntilAction.inDays == 0;
 
                   return Column(
@@ -192,7 +288,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                               ),
                               const SizedBox(height: 32),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () => cancelAction(action.actionID),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFF1908C),
                                   shape: RoundedRectangleBorder(
@@ -209,14 +305,18 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              ElevatedButton(
+                              if (userType != 'Volunteer')
+                                ElevatedButton(
                                 onPressed: isQuestionnaireButtonEnabled
                                     ? () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                      const QuestionnaireScreen(),
+                                          QuestionnaireScreen(
+                                            actionID: action.actionID,
+                                            jmbg: jmbg ?? '',
+                                          ),
                                     ),
                                   );
                                 }
@@ -249,7 +349,6 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
           },
         ),
       ),
-      bottomNavigationBar: const CustomNavBar(),
     );
   }
 }

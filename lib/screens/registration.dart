@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:blood_donation/models/place.dart';
+import 'package:blood_donation/screens/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:blood_donation/common/app_bar.dart';
-import 'package:blood_donation/common/nav_bar.dart';
 import 'package:go_router/go_router.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _fetchCities() async {
     try {
-      final response = await http.get(Uri.parse('https://10.0.2.2:7062/itk/places'));
+      final response = await http.get(Uri.parse('https://10.87.0.161:7062/itk/places'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         final List<Place> places = data.map((json) => Place.fromJson(json)).toList();
@@ -106,7 +106,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     final response = await http.post(
-      Uri.parse('https://10.0.2.2:7062/register'),
+      Uri.parse('https://10.87.0.161:7062/register'),
       headers: {"Content-Type": "application/json"},
       body: body,
     );
@@ -123,7 +123,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5FC),
       appBar: const CustomAppBar(title: 'ITK FON'),
-      bottomNavigationBar: const CustomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         child: SingleChildScrollView(
@@ -146,7 +145,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 controller: _jmbgController,
                 decoration: const InputDecoration(
                   labelText: 'JMBG',
-                  labelStyle: TextStyle(color: Color(0xFF877E7F)),
+                  labelStyle: TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                   border: UnderlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -157,7 +156,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 controller: _fullNameController,
                 decoration: const InputDecoration(
                   labelText: 'Ime i prezime',
-                  labelStyle: TextStyle(color: Color(0xFF877E7F)),
+                  labelStyle: TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                   border: UnderlineInputBorder(),
                 ),
                 keyboardType: TextInputType.text,
@@ -168,7 +167,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'E-mail',
-                  labelStyle: TextStyle(color: Color(0xFF877E7F)),
+                  labelStyle: TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                   border: UnderlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -180,7 +179,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 obscureText: _obscureText,
                 decoration: InputDecoration(
                   labelText: 'Lozinka',
-                  labelStyle: const TextStyle(color: Color(0xFF877E7F)),
+                  labelStyle: const TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                   border: const UnderlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -197,12 +196,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Potvrdi lozinku',
-                  labelStyle: TextStyle(color: Color(0xFF877E7F)),
+                  labelStyle: TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                   border: UnderlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 22),
-              const Text('Pol'),
+              const Text('Pol', style: TextStyle(color: Color(0xFF877E7F), fontSize: 12),),
               Row(
                 children: [
                   Expanded(
@@ -249,7 +248,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              const Text('Krvna grupa'),
+              const Text('Krvna grupa', style: TextStyle(color: Color(0xFF877E7F), fontSize: 12)),
               const SizedBox(height: 14),
               Wrap(
                 spacing: 16.0,
@@ -281,9 +280,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     .toList(),
               ),
               const SizedBox(height: 16),
-              const Text('Grad'),
+              const Text('Grad', style: TextStyle(color: Color(0xFF877E7F), fontSize: 12)),
               _cities.isEmpty
-                  ? const CircularProgressIndicator()
+                  ? const Loading()
                   : DropdownButtonFormField<String>(
                 value: _selectedCity,
                 items: _cities
@@ -340,7 +339,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   },
                   child: const Text.rich(
                     TextSpan(
-                      text: 'Već imaš nalog? ',
+                      text: 'Već imaš nalog? ', style: TextStyle(color: Color(0xFF877E7F), fontSize: 12),
                       children: <TextSpan>[
                         TextSpan(
                           text: 'Prijavi se',
