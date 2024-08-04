@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +28,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
     if (userID == null) {
       print('AAAA');
     }
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -39,9 +40,9 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
     String url;
 
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionID';
+      url = '${BaseAPI.api}/volunteers/$volunteerID/$actionID';
     } else if (userType == 'Donor' && jmbg != null) {
-      url = 'https://10.87.0.161:7062/itk/donors/$jmbg/$actionID';
+      url = '${BaseAPI.api}/donors/$jmbg/$actionID';
     } else {
       throw Exception('Invalid user type or missing identifiers');
     }
@@ -95,7 +96,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
     if (userID == null) {
       print('AAAA');
     }
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -111,9 +112,9 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
     String url;
 
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/actions/incoming/${1}/${volunteerID}';
+      url = '${BaseAPI.api}/actions/incoming/${1}/${volunteerID}';
     } else if (userType == 'Donor' && jmbg != null) {
-      url = 'https://10.87.0.161:7062/itk/actions/incoming/${0}/${jmbg}';
+      url = '${BaseAPI.api}/actions/incoming/${0}/${jmbg}';
     } else {
       throw Exception('Invalid user type or missing identifiers');
     }

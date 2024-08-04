@@ -1,8 +1,6 @@
-import 'package:blood_donation/common/user_cubit.dart';
 import 'package:blood_donation/screens/intro.dart';
 import 'package:blood_donation/screens/notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {

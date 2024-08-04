@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:blood_donation/models/donor_stats.dart';
 import 'package:blood_donation/models/stats.dart';
 import 'package:blood_donation/models/volunteer_stats.dart';
@@ -36,7 +37,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       throw Exception('User ID is missing');
     }
 
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -52,9 +53,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     String url;
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/stats';
+      url = '${BaseAPI.api}/volunteers/${volunteerID}/stats';
     } else if (userType == 'Donor' && JMBG.isNotEmpty) {
-      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/stats';
+      url = '${BaseAPI.api}/donors/${JMBG}/stats';
     } else {
       throw Exception('Invalid user type or missing ID');
     }
@@ -64,7 +65,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     if (response.statusCode == 200) {
       final stats = jsonDecode(response.body);
       setState(() {
-        fullName = stats['fullName'] ?? ''; // Extract fullName from response
+        fullName = stats['fullName'] ?? '';
       });
 
       if (userType == 'Donor') {

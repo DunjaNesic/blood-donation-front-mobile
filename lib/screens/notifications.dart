@@ -1,3 +1,4 @@
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:blood_donation/common/app_bar.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _NotificationsState extends State<Notifications> {
       throw Exception('User ID is missing');
     }
 
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -49,9 +50,9 @@ class _NotificationsState extends State<Notifications> {
 
     String url;
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/calls/false';
+      url = '${BaseAPI.api}/volunteers/${volunteerID}/calls/false';
     } else if (userType == 'Donor' && JMBG.isNotEmpty) {
-      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/calls/false';
+      url = '${BaseAPI.api}/donors/${JMBG}/calls/false';
     } else {
       return [];
     }
@@ -74,8 +75,8 @@ class _NotificationsState extends State<Notifications> {
     }
 
     final url = userType == 'Donor'
-        ? 'https://10.87.0.161:7062/itk/donors/$JMBG/$actionID'
-        : 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionID';
+        ? '${BaseAPI.api}/donors/$JMBG/$actionID'
+        : '${BaseAPI.api}/volunteers/$volunteerID/$actionID';
 
     final response = await http.put(
       Uri.parse(url),

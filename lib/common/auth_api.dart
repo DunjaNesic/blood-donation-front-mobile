@@ -3,20 +3,22 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthAPI extends BaseAPI {
-  Future<http.Response> register(String name, String email, String phone,
-      String password, String passwordConfirmation) async {
+  Future<http.Response> register(String jmbg, String donorFullName, String email,
+      String password, String confirmPassword, int sex, int bloodType, bool isActive, int placeID) async {
     var body = jsonEncode({
-      'customer': {
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'password': password,
-        'password_confirmation': passwordConfirmation
-      }
+      "jmbg": jmbg,
+      "donorFullName": donorFullName,
+      "email": email,
+      "password": password,
+      "confirmPassword": confirmPassword,
+      "sex": sex,
+      "bloodType": bloodType,
+      "isActive": isActive,
+      "placeID": placeID
     });
 
     http.Response response =
-    await http.post(Uri.parse(super.authPath), headers: super.headers, body: body);
+    await http.post(Uri.parse(super.registerPath), headers: super.headers, body: body);
     return response;
   }
 

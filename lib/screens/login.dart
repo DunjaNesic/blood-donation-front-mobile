@@ -1,6 +1,5 @@
 import 'package:blood_donation/common/auth_api.dart';
 import 'package:blood_donation/common/user_cubit.dart';
-import 'package:blood_donation/main.dart';
 import 'package:blood_donation/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

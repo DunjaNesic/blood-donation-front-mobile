@@ -1,3 +1,4 @@
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:blood_donation/screens/view_questionnaire.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     if (userID == null) {
       print('AAAA');
     }
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -50,9 +51,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     String url;
 
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/volunteers/${volunteerID}/calls/true';
+      url = '${BaseAPI.api}/volunteers/${volunteerID}/calls/true';
     } else if (userType == 'Donor' && JMBG != null) {
-      url = 'https://10.87.0.161:7062/itk/donors/${JMBG}/calls/true';
+      url = '${BaseAPI.api}/donors/${JMBG}/calls/true';
     } else {
       throw Exception('Invalid user type or missing identifiers');
     }

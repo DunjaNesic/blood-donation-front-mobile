@@ -1,7 +1,3 @@
-import 'package:blood_donation/screens/coming_soon.dart';
-import 'package:blood_donation/screens/history.dart';
-import 'package:blood_donation/screens/home.dart';
-import 'package:blood_donation/screens/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

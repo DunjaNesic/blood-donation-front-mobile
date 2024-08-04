@@ -1,3 +1,4 @@
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:blood_donation/models/action.dart';
 import 'package:blood_donation/common/app_bar.dart';
@@ -21,7 +22,7 @@ class ActionDetailsScreen extends StatelessWidget {
       return;
     }
 
-    final authUrl = 'https://10.87.0.161:7062/itk/auth/$userID';
+    final authUrl = '${BaseAPI.api}/auth/$userID';
     final authResponse = await http.get(Uri.parse(authUrl), headers: {'Content-Type': 'application/json'});
 
     if (authResponse.statusCode != 200) {
@@ -37,9 +38,9 @@ class ActionDetailsScreen extends StatelessWidget {
     String url;
 
     if (userType == 'Volunteer' && volunteerID != null && volunteerID != 0) {
-      url = 'https://10.87.0.161:7062/itk/volunteers/$volunteerID/$actionId';
+      url = '${BaseAPI.api}/volunteers/$volunteerID/$actionId';
     } else if (userType == 'Donor' && jmbg != null) {
-      url = 'https://10.87.0.161:7062/itk/donors/$jmbg/$actionId';
+      url = '${BaseAPI.api}/donors/$jmbg/$actionId';
     } else {
       await _showDialog(context, 'Invalid user type or missing identifiers', false);
       return;
@@ -61,7 +62,8 @@ class ActionDetailsScreen extends StatelessWidget {
         }),
       );
       final success = response.statusCode == 200;
-      await _showDialog(context, success ? 'Uspesno ste se ponovo prijavili za akciju' : 'Ne mozete vise da se prijavite za akciju, vec ste jednom bili prijavljeni', success);
+      final telo = response.body;
+      await _showDialog(context, success ? '${response.body}' : 'Ne mozete vise da se prijavite za akciju, vec ste jednom bili prijavljeni', success);
     } else {
       await _showDialog(context, res == 200
           ? 'Uspesno ste se prijavili na akciju!'

@@ -1,3 +1,4 @@
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:blood_donation/common/app_bar.dart';
 import 'package:blood_donation/models/question.dart';
 import 'package:blood_donation/models/questionnaire.dart';
@@ -28,7 +29,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
 
   Future<Map<int, String>> fetchQuestions() async {
     final response = await http.get(
-      Uri.parse('https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/questions'),
+      Uri.parse('${BaseAPI.api}/donors/${widget.jmbg}/questionnaires/questions'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -46,7 +47,7 @@ class _QuestionnaireForActionState extends State<QuestionnaireForAction> {
 
   Future<Questionnaire> fetchQuestionnaire() async {
     final response = await http.get(Uri.parse(
-        'https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/${widget.actionID}'));
+        '${BaseAPI.api}/donors/${widget.jmbg}/questionnaires/${widget.actionID}'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

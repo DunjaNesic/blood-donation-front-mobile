@@ -1,3 +1,4 @@
+import 'package:blood_donation/common/api_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -31,7 +32,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   Future<void> _fetchQuestions() async {
     final response = await http.get(
-      Uri.parse('https://10.0.2.2:7062/itk/donors/${widget.jmbg}/questionnaires/questions'),
+      Uri.parse('${BaseAPI.api}/donors/${widget.jmbg}/questionnaires/questions'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -53,7 +54,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   Future<void> _submitQuestionnaire() async {
     final response = await http.post(
-      Uri.parse('https://10.87.0.161:7062/itk/donors/${widget.jmbg}/questionnaires/2'),
+      Uri.parse('${BaseAPI.api}/donors/${widget.jmbg}/questionnaires/${widget.actionID}'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
