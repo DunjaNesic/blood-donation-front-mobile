@@ -188,7 +188,7 @@ class IconWithText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: const Color(0xFF506EDA),
         borderRadius: BorderRadius.circular(15.0),

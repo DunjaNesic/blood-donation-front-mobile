@@ -19,8 +19,8 @@ class _HomeState extends State<Home> {
   final TextEditingController _dateFromController = TextEditingController();
   final TextEditingController _dateToController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  String? _selectedCity;
-  List<String> _cities = [];
+  Place? _selectedCity;
+  List<Place> _cities = [];
   List<TransfusionAction> _actions = [];
 
   @override
@@ -46,18 +46,17 @@ class _HomeState extends State<Home> {
 
     final minDate = _dateFromController.text.isNotEmpty ? _dateFromController.text : null;
     final maxDate = _dateToController.text.isNotEmpty ? _dateToController.text : null;
-    //na beku treba da odradim filtriranje za grad
-    final city = _selectedCity != null && _selectedCity != 'Svi gradovi' ? _selectedCity : null;
+    final city = _selectedCity?.placeID;
     final searchQuery = _searchController.text.isNotEmpty ? _searchController.text : null;
 
     final queryParams = {
       if (minDate != null) 'MinDate': minDate,
       if (maxDate != null) 'MaxDate': maxDate,
-      if (city != null) 'Search': city,
+      if (city != null) 'PlaceID': city.toString(),
       if (searchQuery != null) 'Search': searchQuery,
     };
 
-    final uri = Uri.https('${BaseAPI.ip$port}', '/itk/actions', queryParams);
+    final uri = Uri.https(BaseAPI.ip$port, '/itk/actions', queryParams);
 
     final headers = {
       'Accept': 'application/json',
@@ -91,10 +90,10 @@ class _HomeState extends State<Home> {
         final List<dynamic> data = jsonDecode(response.body);
         final List<Place> places = data.map((json) => Place.fromJson(json)).toList();
 
-        if(mounted) {
+        if (mounted) {
           setState(() {
-            _cities = ['Svi gradovi'];
-            _cities.addAll(places.map((place) => place.placeName).toList());
+            _cities = [Place(placeID: 0, placeName: 'Svi gradovi')] + places;
+            _selectedCity = _cities.first;
           });
         }
       } else {
@@ -104,6 +103,7 @@ class _HomeState extends State<Home> {
       print('Exception occurred: $e');
     }
   }
+
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
@@ -125,7 +125,9 @@ class _HomeState extends State<Home> {
       _dateFromController.clear();
       _dateToController.clear();
       _searchController.clear();
+      _selectedCity = _cities.first;
     });
+    _fetchActions();
   }
 
   @override
@@ -299,29 +301,24 @@ class _HomeState extends State<Home> {
             ),
             const SizedBox(height: 16.0),
             CustomDropdownButton(
-              hint: 'Grad',
-              value: _selectedCity,
+              selectedValue: _selectedCity,
               items: _cities,
-              onChanged: (value) {
+              onChanged: (Place? newValue) {
                 setState(() {
-                  _selectedCity = value == 'All Cities' ? null : value;
-                  // _fetchActions(); uraditi ovo posle
+                  _selectedCity = newValue;
+                  _fetchActions();
                 });
               },
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 16.0),
             Expanded(
-              child: _actions.isNotEmpty
-                  ? ListView.builder(
+              child: ListView.builder(
                 itemCount: _actions.length,
                 itemBuilder: (context, index) {
                   final action = _actions[index];
-                  return ActionCard(
-                    action: action,
-                  );
+                  return ActionCard(action: action);
                 },
-              )
-                  : const Center(child: Text('No actions available')),
+              ),
             ),
           ],
         ),
@@ -330,24 +327,23 @@ class _HomeState extends State<Home> {
   }
 }
 
+
 class CustomDropdownButton extends StatelessWidget {
-  final String hint;
-  final String? value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
+  final Place? selectedValue;
+  final List<Place> items;
+  final ValueChanged<Place?> onChanged;
 
   const CustomDropdownButton({
-    required this.hint,
-    required this.value,
+    required this.selectedValue,
     required this.items,
     required this.onChanged,
-    super.key
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 42),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(100.0),
@@ -359,39 +355,20 @@ class CustomDropdownButton extends StatelessWidget {
           ),
         ],
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          hint: Text(hint, style: const TextStyle(color: Colors.grey)),
-          items: items.map((String city) {
-            return DropdownMenuItem<String>(
-              value: city,
-              child: DropdownItem(city: city),
-            );
-          }).toList(),
-          onChanged: onChanged,
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-        ),
+      child: DropdownButton<Place>(
+        isExpanded: true,
+        underline: const SizedBox(),
+        value: selectedValue,
+        onChanged: onChanged,
+        items: items.map((Place place) {
+          return DropdownMenuItem<Place>(
+            value: place,
+            child: Text(place.placeName),
+          );
+        }).toList(),
+        style: const TextStyle(color: Colors.black, fontSize: 16),
+        dropdownColor: Colors.white,
       ),
-    );
-  }
-}
-
-class DropdownItem extends StatelessWidget {
-  final String city;
-
-  const DropdownItem({super.key, required this.city});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Text(city, style: const TextStyle(color: Colors.black)),
     );
   }
 }

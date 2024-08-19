@@ -263,8 +263,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                                   CircularPercentIndicator(
                                     radius: 40.0,
                                     lineWidth: 8.0,
-                                    percent: timeUntilAction.inDays / 365,
-                                    center: Text(
+                                    percent: (timeUntilAction.inDays / 365).clamp(0.0, 1.0),                                    center: Text(
                                       timeUntilActionFormatted,
                                       style: const TextStyle(
                                         color: Colors.white,
